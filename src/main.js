@@ -57,6 +57,7 @@ const COURSE_DATA = [
 const navElement = document.getElementById('course-nav');
 const headerElement = document.getElementById('lesson-header');
 const contentElement = document.getElementById('lesson-content');
+const mainContent = document.getElementById('main-content'); // Define mainContent
 
 let currentActiveLink = null;
 
@@ -93,13 +94,9 @@ function initNavigation() {
 }
 
 function getCorrectPath(originalFile) {
-  // Try to determine the absolute base URL dynamically
-  let base = '';
-  if (window.location.hostname.includes('github.io')) {
-    base = '/ingles-yuli-course';
-  } else if (window.location.pathname.includes('/ingles-yuli-course/')) {
-    base = '/ingles-yuli-course';
-  }
+  const base = import.meta.env.BASE_URL.endsWith('/')
+    ? import.meta.env.BASE_URL.slice(0, -1)
+    : import.meta.env.BASE_URL;
 
   const cleanFile = originalFile.startsWith('/') ? originalFile.substring(1) : originalFile;
   const fullPath = `${base}/${cleanFile}`.replace(/\/+/g, '/'); // Avoid double slashes
@@ -107,6 +104,8 @@ function getCorrectPath(originalFile) {
 }
 
 async function loadLesson(lesson, linkElement) {
+  if (!contentElement || !headerElement) return; // Null check
+
   if (currentActiveLink) currentActiveLink.classList.remove('active');
   linkElement.classList.add('active');
   currentActiveLink = linkElement;
@@ -117,9 +116,8 @@ async function loadLesson(lesson, linkElement) {
 
   const targetPath = getCorrectPath(lesson.file);
   const cacheBuster = `?v=${Date.now()}`;
-  const fullFetchUrl = window.location.origin + targetPath + cacheBuster;
 
-  console.log('Course App: Full Fetch URL:', fullFetchUrl);
+  console.log('Course App: Fetch Path:', targetPath);
 
   try {
     const response = await fetch(targetPath + cacheBuster);
