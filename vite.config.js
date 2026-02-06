@@ -1,5 +1,8 @@
 import { defineConfig } from 'vite'
 
 export default defineConfig({
-    base: '/ingles-yuli-course/',
+    base: './', // Use relative paths for assets
+    build: {
+        outDir: 'dist',
+    }
 })

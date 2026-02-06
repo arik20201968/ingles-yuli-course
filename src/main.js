@@ -1,4 +1,5 @@
-// Basic platform logic using global Marked.js
+import './style.css'
+import { marked } from 'marked'
 
 const COURSE_DATA = [
   {
@@ -60,11 +61,7 @@ const contentElement = document.getElementById('lesson-content');
 let currentActiveLink = null;
 
 function initNavigation() {
-  console.log('Course App: Initializing navigation...');
-  if (!navElement) {
-    console.error('Course App: Navigation element #course-nav not found!');
-    return;
-  }
+  if (!navElement) return;
 
   COURSE_DATA.forEach(module => {
     const group = document.createElement('div');
@@ -87,40 +84,43 @@ function initNavigation() {
       group.appendChild(link);
 
       if (!currentActiveLink) {
-        console.log('Course App: Auto-loading first lesson:', lesson.id);
         loadLesson(lesson, link);
       }
     });
 
     navElement.appendChild(group);
   });
-  console.log('Course App: Navigation initialized.');
+}
+
+function getCorrectPath(originalFile) {
+  // If we're on GH pages, the base URL includes the repo name.
+  // Vite's build with base: './' makes assets relative to index.html.
+  // Content in 'public' folder (like modules/) is served relative to root.
+
+  if (window.location.hostname.includes('github.io')) {
+    // Force absolute path for GH Pages subpath
+    return `/ingles-yuli-course/${originalFile}`;
+  }
+  // Local dev usually works with relative or absolute from root
+  return `/${originalFile}`;
 }
 
 async function loadLesson(lesson, linkElement) {
-  console.log('Course App: Requesting lesson:', lesson.file);
-
   if (currentActiveLink) currentActiveLink.classList.remove('active');
   linkElement.classList.add('active');
   currentActiveLink = linkElement;
 
   contentElement.classList.remove('fade-in');
-  contentElement.innerHTML = '<p class="loader">Loading lesson...</p>';
+  contentElement.innerHTML = '<p>Loading lesson...</p>';
   headerElement.innerHTML = `<h1>${lesson.title}</h1>`;
 
-  try {
-    const fetchPath = window.location.hostname.includes('github.io')
-      ? `/ingles-yuli-course/${lesson.file}`
-      : `/${lesson.file}`;
-    console.log('Course App: Fetching from:', fetchPath);
-    const response = await fetch(fetchPath);
-    if (!response.ok) {
-      console.error('Course App: Fetch error!', response.status, fetchPath);
-      throw new Error(`Lesson file not found (${response.status})`);
-    }
+  const targetPath = getCorrectPath(lesson.file);
+  console.log('Fetching lesson from:', targetPath);
 
+  try {
+    const response = await fetch(targetPath);
+    if (!response.ok) throw new Error(`Status ${response.status}`);
     const text = await response.text();
-    console.log('Course App: Lesson content received.');
 
     const cleanText = text.replace(/^# .*\n/, '');
     contentElement.innerHTML = marked.parse(cleanText);
@@ -130,15 +130,11 @@ async function loadLesson(lesson, linkElement) {
     if (mainContent) mainContent.scrollTop = 0;
 
   } catch (error) {
-    console.error('Course App: Critical error loading lesson:', error);
-    contentElement.innerHTML = `
-      <div class="error-box">
-        <h3>Error Loading Lesson</h3>
-        <p>${error.message}</p>
-        <code style="display:block; margin-top:10px; background:#222; padding:10px; border-radius:4px;">
-          Tested path: ${lesson.file}
-        </code>
-      </div>`;
+    contentElement.innerHTML = `<div style="color: #ef4444; padding: 20px;">
+      <h3>Error Loading Content</h3>
+      <p>Could not fetch: <code>${targetPath}</code></p>
+      <p>Error: ${error.message}</p>
+    </div>`;
   }
 }
 
