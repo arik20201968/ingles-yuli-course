@@ -93,14 +93,17 @@ function initNavigation() {
 }
 
 function getCorrectPath(originalFile) {
-  const isGH = window.location.hostname.includes('github.io');
-  // Hardcoded repo base for GitHub Pages is the most stable approach
-  const base = isGH ? '/ingles-yuli-course' : '';
+  // Try to determine the absolute base URL dynamically
+  let base = '';
+  if (window.location.hostname.includes('github.io')) {
+    base = '/ingles-yuli-course';
+  } else if (window.location.pathname.includes('/ingles-yuli-course/')) {
+    base = '/ingles-yuli-course';
+  }
 
-  // Ensure the file path doesn't have a leading slash doubling up
   const cleanFile = originalFile.startsWith('/') ? originalFile.substring(1) : originalFile;
-
-  return `${base}/${cleanFile}`;
+  const fullPath = `${base}/${cleanFile}`.replace(/\/+/g, '/'); // Avoid double slashes
+  return fullPath;
 }
 
 async function loadLesson(lesson, linkElement) {
@@ -109,36 +112,48 @@ async function loadLesson(lesson, linkElement) {
   currentActiveLink = linkElement;
 
   contentElement.classList.remove('fade-in');
-  contentElement.innerHTML = '<p>Loading lesson...</p>';
+  contentElement.innerHTML = '<div class="loader-container"><p>Fetching lesson data...</p><div class="spinner"></div></div>';
   headerElement.innerHTML = `<h1>${lesson.title}</h1>`;
 
   const targetPath = getCorrectPath(lesson.file);
-  const cacheBuster = `?t=${Date.now()}`;
-  console.log('Course App: Fetching lesson from:', targetPath + cacheBuster);
+  const cacheBuster = `?v=${Date.now()}`;
+  const fullFetchUrl = window.location.origin + targetPath + cacheBuster;
+
+  console.log('Course App: Full Fetch URL:', fullFetchUrl);
 
   try {
     const response = await fetch(targetPath + cacheBuster);
-    if (!response.ok) throw new Error(`Status ${response.status} (Not Found)`);
+    if (!response.ok) throw new Error(`HTTP ${response.status} - Content not available at this path.`);
     const text = await response.text();
 
     const cleanText = text.replace(/^# .*\n/, '');
     contentElement.innerHTML = marked.parse(cleanText);
     contentElement.classList.add('fade-in');
 
-    const mainContent = document.getElementById('main-content');
     if (mainContent) mainContent.scrollTop = 0;
 
   } catch (error) {
-    console.error('Course App: Failed to load lesson:', targetPath, error);
+    console.error('Course App: Loading failed:', error);
     contentElement.innerHTML = `
-      <div style="color: #ef4444; padding: 20px; border: 1px solid rgba(239, 68, 68, 0.2); border-radius: 12px; background: rgba(239, 68, 68, 0.05);">
-        <h3 style="margin-top: 0;">Error de Carga / Loading Error</h3>
-        <p>No se pudo cargar la lección: <code>${lesson.title}</code></p>
-        <p style="font-size: 0.9em; opacity: 0.8;">Ruta intentada: <code>${targetPath}</code></p>
-        <p style="font-size: 0.8em;">Error: ${error.message}</p>
-        <button onclick="location.reload()" style="background: #ef4444; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 600; margin-top: 10px;">
-          Reintentar / Retry
-        </button>
+      <div class="error-card">
+        <h3>Unable to load lesson content</h3>
+        <p>We couldn't reach the lesson file: <strong>${lesson.title}</strong></p>
+        
+        <div class="error-details">
+          <p><strong>Technical Info:</strong></p>
+          <ul>
+            <li>File: <code>${lesson.file}</code></li>
+            <li>Resolved Path: <code>${targetPath}</code></li>
+            <li>Error: ${error.message}</li>
+          </ul>
+        </div>
+
+        <div class="error-actions">
+          <button onclick="location.reload(true)" class="btn-primary">Force Reload App</button>
+          <a href="https://github.com/arik20201968/ingles-yuli-course" target="_blank" class="btn-secondary">Check GitHub Status</a>
+        </div>
+        
+        <p class="error-hint">If this persists, try clearing your browser cache or opening in Incognito mode.</p>
       </div>`;
   }
 }
