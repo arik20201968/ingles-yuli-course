@@ -61,6 +61,12 @@ const contentElement = document.getElementById('lesson-content');
 let currentActiveLink = null;
 
 function initNavigation() {
+  console.log('Course App: Initializing navigation...');
+  if (!navElement) {
+    console.error('Course App: Navigation element #course-nav not found!');
+    return;
+  }
+
   COURSE_DATA.forEach(module => {
     const group = document.createElement('div');
     group.className = 'module-group';
@@ -81,43 +87,55 @@ function initNavigation() {
       };
       group.appendChild(link);
 
-      // Load first lesson by default
       if (!currentActiveLink) {
+        console.log('Course App: Auto-loading first lesson:', lesson.id);
         loadLesson(lesson, link);
       }
     });
 
     navElement.appendChild(group);
   });
+  console.log('Course App: Navigation initialized.');
 }
 
 async function loadLesson(lesson, linkElement) {
-  // Update UI links
+  console.log('Course App: Requesting lesson:', lesson.file);
+
   if (currentActiveLink) currentActiveLink.classList.remove('active');
   linkElement.classList.add('active');
   currentActiveLink = linkElement;
 
-  // Clear and show loading
   contentElement.classList.remove('fade-in');
-  contentElement.innerHTML = '<p>Loading lesson...</p>';
+  contentElement.innerHTML = '<p class="loader">Loading lesson...</p>';
   headerElement.innerHTML = `<h1>${lesson.title}</h1>`;
 
   try {
     const response = await fetch(lesson.file);
-    if (!response.ok) throw new Error('Lesson file not found');
+    if (!response.ok) {
+      console.error('Course App: Fetch error!', response.status, lesson.file);
+      throw new Error(`Lesson file not found (${response.status})`);
+    }
+
     const text = await response.text();
+    console.log('Course App: Lesson content received.');
 
-    // Remove the title from markdown since we show it in header
     const cleanText = text.replace(/^# .*\n/, '');
-
     contentElement.innerHTML = marked.parse(cleanText);
     contentElement.classList.add('fade-in');
 
-    // Smooth scroll to top
-    document.getElementById('main-content').scrollTop = 0;
+    const mainContent = document.getElementById('main-content');
+    if (mainContent) mainContent.scrollTop = 0;
 
   } catch (error) {
-    contentElement.innerHTML = `<p style="color: #ef4444;">Error loading lesson: ${error.message}</p>`;
+    console.error('Course App: Critical error loading lesson:', error);
+    contentElement.innerHTML = `
+      <div class="error-box">
+        <h3>Error Loading Lesson</h3>
+        <p>${error.message}</p>
+        <code style="display:block; margin-top:10px; background:#222; padding:10px; border-radius:4px;">
+          Tested path: ${lesson.file}
+        </code>
+      </div>`;
   }
 }
 
