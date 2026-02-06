@@ -109,9 +109,13 @@ async function loadLesson(lesson, linkElement) {
   headerElement.innerHTML = `<h1>${lesson.title}</h1>`;
 
   try {
-    const response = await fetch(lesson.file);
+    const fetchPath = window.location.hostname.includes('github.io')
+      ? `/ingles-yuli-course/${lesson.file}`
+      : `/${lesson.file}`;
+    console.log('Course App: Fetching from:', fetchPath);
+    const response = await fetch(fetchPath);
     if (!response.ok) {
-      console.error('Course App: Fetch error!', response.status, lesson.file);
+      console.error('Course App: Fetch error!', response.status, fetchPath);
       throw new Error(`Lesson file not found (${response.status})`);
     }
 
