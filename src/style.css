@@ -149,7 +149,8 @@ body {
   margin-bottom: 1.25rem;
 }
 
-#lesson-content ul, #lesson-content ol {
+#lesson-content ul,
+#lesson-content ol {
   margin-bottom: 1.5rem;
   padding-left: 1.5rem;
 }
@@ -167,7 +168,8 @@ body {
   overflow: hidden;
 }
 
-#lesson-content th, #lesson-content td {
+#lesson-content th,
+#lesson-content td {
   padding: 1rem 1.5rem;
   text-align: left;
   border-bottom: 1px solid var(--border-color);
@@ -199,8 +201,15 @@ body {
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* Premium Scrollbar */
@@ -219,4 +228,102 @@ body {
 
 ::-webkit-scrollbar-thumb:hover {
   background: var(--text-secondary);
+}
+
+/* Error and Loading UI */
+.error-card {
+  padding: 30px;
+  background: rgba(239, 68, 68, 0.05);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  border-radius: 16px;
+  max-width: 600px;
+  margin: 40px auto;
+  text-align: center;
+}
+
+.error-details {
+  text-align: left;
+  background: rgba(0, 0, 0, 0.2);
+  padding: 15px;
+  border-radius: 8px;
+  margin: 20px 0;
+  font-family: monospace;
+  font-size: 0.85em;
+  color: #fca5a5;
+}
+
+.error-details ul {
+  list-style: none;
+  padding: 0;
+  margin: 5px 0;
+}
+
+.error-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.btn-primary {
+  background: #ef4444;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-primary:hover {
+  background: #dc2626;
+  transform: translateY(-2px);
+}
+
+.btn-secondary {
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  text-decoration: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: inline-block;
+}
+
+.error-hint {
+  font-size: 0.85em;
+  opacity: 0.6;
+  margin-top: 20px;
+}
+
+.loader-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 100px 0;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(138, 75, 250, 0.1);
+  border-top: 3px solid #8a4bfa;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-top: 20px;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
 }
