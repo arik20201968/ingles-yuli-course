@@ -93,8 +93,14 @@ function initNavigation() {
 }
 
 function getCorrectPath(originalFile) {
-  // Using strictly relative paths is the most reliable way for GitHub Pages
-  return `./${originalFile}`;
+  const isGH = window.location.hostname.includes('github.io');
+  // Hardcoded repo base for GitHub Pages is the most stable approach
+  const base = isGH ? '/ingles-yuli-course' : '';
+
+  // Ensure the file path doesn't have a leading slash doubling up
+  const cleanFile = originalFile.startsWith('/') ? originalFile.substring(1) : originalFile;
+
+  return `${base}/${cleanFile}`;
 }
 
 async function loadLesson(lesson, linkElement) {
