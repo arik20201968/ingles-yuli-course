@@ -113,11 +113,12 @@ async function loadLesson(lesson, linkElement) {
   headerElement.innerHTML = `<h1>${lesson.title}</h1>`;
 
   const targetPath = getCorrectPath(lesson.file);
-  console.log('Fetching lesson from:', targetPath);
+  const cacheBuster = `?t=${Date.now()}`;
+  console.log('Course App: Fetching lesson from:', targetPath + cacheBuster);
 
   try {
-    const response = await fetch(targetPath);
-    if (!response.ok) throw new Error(`Status ${response.status}`);
+    const response = await fetch(targetPath + cacheBuster);
+    if (!response.ok) throw new Error(`Status ${response.status} (Not Found)`);
     const text = await response.text();
 
     const cleanText = text.replace(/^# .*\n/, '');
@@ -128,11 +129,17 @@ async function loadLesson(lesson, linkElement) {
     if (mainContent) mainContent.scrollTop = 0;
 
   } catch (error) {
-    contentElement.innerHTML = `<div style="color: #ef4444; padding: 20px;">
-      <h3>Error Loading Content</h3>
-      <p>Could not fetch: <code>${targetPath}</code></p>
-      <p>Error: ${error.message}</p>
-    </div>`;
+    console.error('Course App: Failed to load lesson:', targetPath, error);
+    contentElement.innerHTML = `
+      <div style="color: #ef4444; padding: 20px; border: 1px solid rgba(239, 68, 68, 0.2); border-radius: 12px; background: rgba(239, 68, 68, 0.05);">
+        <h3 style="margin-top: 0;">Error de Carga / Loading Error</h3>
+        <p>No se pudo cargar la lección: <code>${lesson.title}</code></p>
+        <p style="font-size: 0.9em; opacity: 0.8;">Ruta intentada: <code>${targetPath}</code></p>
+        <p style="font-size: 0.8em;">Error: ${error.message}</p>
+        <button onclick="location.reload()" style="background: #ef4444; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 600; margin-top: 10px;">
+          Reintentar / Retry
+        </button>
+      </div>`;
   }
 }
 
