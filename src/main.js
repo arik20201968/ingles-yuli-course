@@ -1,5 +1,4 @@
-import './style.css'
-import { marked } from 'marked'
+// Basic platform logic using global Marked.js
 
 const COURSE_DATA = [
   {
