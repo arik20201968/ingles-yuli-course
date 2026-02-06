@@ -93,16 +93,8 @@ function initNavigation() {
 }
 
 function getCorrectPath(originalFile) {
-  // If we're on GH pages, the base URL includes the repo name.
-  // Vite's build with base: './' makes assets relative to index.html.
-  // Content in 'public' folder (like modules/) is served relative to root.
-
-  if (window.location.hostname.includes('github.io')) {
-    // Force absolute path for GH Pages subpath
-    return `/ingles-yuli-course/${originalFile}`;
-  }
-  // Local dev usually works with relative or absolute from root
-  return `/${originalFile}`;
+  // Using strictly relative paths is the most reliable way for GitHub Pages
+  return `./${originalFile}`;
 }
 
 async function loadLesson(lesson, linkElement) {
